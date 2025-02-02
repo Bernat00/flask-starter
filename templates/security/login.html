@@ -2,7 +2,11 @@
 
 {% block title %}Bejelentkezés{% endblock %}
 
-{% block heading %}<h2 class="text-center mb-3 pt-4">Bejelentkezés</h2>{% endblock %}
+{% block heading %}
+    {% with heading_content="Bejelentkezés" %}
+        {% include "heading.html" %}
+    {% endwith %}
+{% endblock %}
 
 {% block main %}
 
@@ -20,7 +24,7 @@
             <div class="input-group">
             {{ form.password(class="form-control", id="password") }}
             <span class="show-password-btn ms-4 mt-1" style="font-size: 1.2em" onclick="togglePasswordVisibility('password', this)">
-                <i class="fa fa-eye-slash"></i>
+                <i class="fa fa-eye"></i>
             </span>
             </div>
         </div>

@@ -1,4 +1,3 @@
-from werkzeug.security import generate_password_hash
 import click
 from alchemical.flask import Alchemical
 from flask import g
@@ -44,8 +43,9 @@ def reset_admin():
 
         # DON'T USE THE USUAL METHODS AS THEY REQUIRE A G.SESSION
         admin.name = name
-        admin.password = generate_password_hash(password)
-        admin.role = 'super_admin'
+        admin.password = password
+        # THIS HAS TO BE WITH THE _ROLE NOT ROLE
+        admin._role = 'super_admin'
 
         session.add(admin)
         session.commit()

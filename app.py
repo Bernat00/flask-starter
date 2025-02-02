@@ -1,7 +1,5 @@
-# todo Adam css dolgok
-# todo Adam valahol jelenlen meg magyarul a jogosultság (g.user.role_hun)
-# todo Adam dark mode legyen vagy ne legyen
-# todo settings page
+# todo egy about oldal, ahol mind a 3-an bemutatkozunk és írunk 1-2 sort magunkról, esetleg még egy fotót és feltöltünk
+
 
 import os
 import logging
@@ -13,19 +11,26 @@ import blueprints.security
 import blueprints.pages
 import blueprints.users
 import security
-from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_wtf.csrf import CSRFProtect
 from config import Config
 from flask_minify import Minify
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, PackageLoader, select_autoescape, FileSystemLoader
+from blueprints.pages import init_error_handlers
+from custom_filters import safe_escape
+from flask_ckeditor import CKEditor
 
 csrf = CSRFProtect()
 minify = Minify(html=True, js=True, cssless=True)
+ckeditor = CKEditor()
 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    app.jinja_env.filters['safe_escape'] = safe_escape
     app.jinja_env.add_extension('jinja2.ext.do')
+
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_size': 10,
         'max_overflow': 20,
@@ -36,6 +41,8 @@ def create_app(config_class=Config):
     security.init_app(app)
     csrf.init_app(app)
     minify.init_app(app)
+    init_error_handlers(app)
+    ckeditor.init_app(app)
 
     app.register_blueprint(blueprints.posts.bp, url_prefix='/posts')
     app.register_blueprint(blueprints.pages.bp, url_prefix='/')
@@ -45,27 +52,6 @@ def create_app(config_class=Config):
     handler = RotatingFileHandler('errors.log')
     handler.setLevel(logging.ERROR)
     app.logger.addHandler(handler)
-
-    @app.errorhandler(500)
-    def internal_server_error(error):
-        app.logger.error('Server Error: %s', error)
-        return render_template('errors/500.html'), 500
-
-    @app.errorhandler(404)
-    def not_found(error):
-        return render_template('errors/404.html'), 404
-
-    @app.errorhandler(401)
-    def unauthorized(error):
-        return render_template('errors/401.html'), 401
-
-    @app.errorhandler(403)
-    def forbidden(error):
-        return render_template('errors/403.html'), 403
-
-    @app.errorhandler(CSRFError)
-    def handle_csrf_error(e):
-        return render_template('errors/403.html'), 400
 
     return app
 

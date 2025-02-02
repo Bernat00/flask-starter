@@ -1,6 +1,8 @@
+from typing import List
+
 from alchemical import Model
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -17,6 +19,7 @@ class User(Model):
     name: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     _password: Mapped[str] = mapped_column(String(180), nullable=False)
     _role: Mapped[str] = mapped_column(String(64), nullable=False)
+    posts: Mapped[List["Post"]] = relationship(back_populates="author")
 
 
     @property
@@ -48,7 +51,7 @@ class User(Model):
 
     @property
     def role_hun(self):
-        return roles[self.role]
+        return roles[self._role]
 
     def check_password(self, password) -> bool:
         return check_password_hash(self._password, password)
